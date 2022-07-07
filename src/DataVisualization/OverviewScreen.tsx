@@ -1,6 +1,5 @@
 import React from "react";
 import { AbsoluteFill, interpolate, Sequence, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { IMG_PREFIX } from "./constants";
 import { OItem } from "./OverviewItem";
 
 import tdCover from "./Img/3dmark-time-spy-hero.jpg";

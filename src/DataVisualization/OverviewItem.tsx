@@ -76,7 +76,7 @@ export const OItem: React.FC<{
     <div style={{...coverStyle, background, opacity: maskAlpha }} />
     <div style={{
       ...coverStyle,
-      background: `linear-gradient(180deg, transparent 0%, transparent 30%, ${background} 80%, ${background} 100%`,
+      background: `linear-gradient(180deg, transparent 0%, transparent 30%, ${background} 80%, ${background} 100%)`,
       opacity: 1 - (expandingProgress || 0)
     }}></div>
     <div style={titleContainer}>
