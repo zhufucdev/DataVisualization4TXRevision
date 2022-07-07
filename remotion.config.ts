@@ -6,3 +6,5 @@ import {Config} from 'remotion';
 
 Config.Rendering.setImageFormat('jpeg');
 Config.Output.setOverwriteOutput(true);
+Config.Output.setCodec('prores');
+Config.Output.setProResProfile("standard")
