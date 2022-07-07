@@ -1,4 +1,4 @@
-import {Composition} from 'remotion';
+import { Composition } from 'remotion';
 import { DataVisualization } from './DataVisualization';
 import { OScreen } from './DataVisualization/OverviewScreen';
 
@@ -12,7 +12,7 @@ export const RemotionVideo: React.FC = () => {
 				// npx remotion render src/index.tsx <id> out/video.mp4
 				id="Main"
 				component={DataVisualization}
-				durationInFrames={280}
+				durationInFrames={400}
 				fps={60}
 				width={1920}
 				height={1080}
