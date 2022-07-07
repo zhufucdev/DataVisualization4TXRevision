@@ -1,7 +1,6 @@
 import React from "react";
 import { OItem } from "./OverviewItem";
-import { TEST_ITEMS } from "./constants";
-import { getAbsImgUrl } from "./OverviewScreen";
+import { testItems } from "./OverviewScreen";
 import { interpolate, useCurrentFrame, Easing, useVideoConfig } from "remotion";
 
 export const ExpandingTransition: React.FC<{
@@ -61,10 +60,10 @@ export const ExpandingTransition: React.FC<{
     opacity
   }
 
-  const record = TEST_ITEMS[0];
+  const record = testItems[0];
   return <div style={style}>
-    <OItem title={record.title} subtitle={record.subtitle} icon={getAbsImgUrl(record.icon)}
-  background={record.background} cover={getAbsImgUrl(record.cover)} dark={record.dark}
-  expandingProgress={eProgress}/>
+    <OItem title={record.title} subtitle={record.subtitle} icon={record.icon}
+      background={record.background} cover={record.cover} dark={record.dark}
+      expandingProgress={eProgress}/>
   </div>
 }
