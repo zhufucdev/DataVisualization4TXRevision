@@ -1,14 +1,16 @@
-import React from "react";
+import React, { Children, ReactElement } from "react";
 import { OItem } from "./OverviewItem";
-import { testItems } from "./OverviewScreen";
-import { interpolate, useCurrentFrame, Easing, useVideoConfig } from "remotion";
+import { interpolate, useCurrentFrame, Easing, useVideoConfig, Sequence } from "remotion";
+import { TestItem } from "../../types/test";
 
 export const ExpandingTransition: React.FC<{
+  children: ReactElement;
   top: number;
   left: number;
   width: number;
   height: number;
-}> = ({top, left, width, height}) => {
+  record: TestItem;
+}> = ({children, top, left, width, height, record}) => {
   const frame = useCurrentFrame();
   const video = useVideoConfig();
 
@@ -60,10 +62,14 @@ export const ExpandingTransition: React.FC<{
     opacity
   }
 
-  const record = testItems[0];
-  return <div style={style}>
+  return <>
+  <div style={style}>
     <OItem title={record.title} subtitle={record.subtitle} icon={record.icon}
-      background={record.background} cover={record.cover} dark={record.dark}
-      expandingProgress={eProgress}/>
+        background={record.background} cover={record.cover} dark={record.dark}
+        expandingProgress={eProgress}/>
   </div>
+  <Sequence from={30}>
+    {children}
+  </Sequence>
+  </>
 }
