@@ -1,9 +1,9 @@
 import React from "react";
 import { CHART_STROKE, FONT_FAMILY } from "./constants";
-import { Column, max, Row, Table } from "./formutils";
+import { Column, INSERT_COLUMN, INSERT_ROW, max, Row, Table } from "./formutils";
 import parse from "html-react-parser";
 import { interpolate, useCurrentFrame, Easing } from "remotion";
-import Color from "color";
+import Color, { lab } from "color";
 
 const maxLength = 1200,
   barColors = ['#00B0FF', '#FF3D00', '#FFD600', '#F50057', '#D500F9'],
@@ -13,10 +13,10 @@ export const BarChart: React.FC<{
   width: number;
   height: number;
   source: Table;
-  progressive: boolean;
+  translation: boolean;
   dark: boolean;
   primaryBarColor?: string;
-}> = ({width, height, source, progressive, dark, primaryBarColor}) => {
+}> = ({width, height, source, translation, dark, primaryBarColor}) => {
   const barColor = (index: number): string => {
       const baseColor = primaryBarColor
       ? (index == 0 ? primaryBarColor
@@ -28,35 +28,26 @@ export const BarChart: React.FC<{
 
   const maxData = parseFloat(max(source, (a, b) => parseFloat(a.value) > parseFloat(b.value)).value);
   const frame = useCurrentFrame();
-  const legendProgresses: Array<number> = [];
-  if (!progressive) {
-    legendProgresses.push(
-      interpolate(
-        frame,
-        [0, 50],
-        [0, 1],
-        {
-          extrapolateRight: 'clamp',
-          extrapolateLeft: 'clamp',
-          easing: Easing.inOut(Easing.cubic)
-        }
-      )
-    )
-  } else {
-    for (let x = 1; x < source.cols.length; x++) {
-      legendProgresses.push(
-        interpolate(
-          frame,
-          [(x - 1) * 100, x * 100 - 50],
-          [0, 1],
-          {
-            extrapolateRight: 'clamp',
-            easing: Easing.inOut(Easing.cubic)
-          }
-        )
-      )
+  const legendProgress = interpolate(
+    frame,
+    translation ? [20, 70] : [0, 50],
+    [0, 1],
+    {
+      extrapolateRight: 'clamp',
+      extrapolateLeft: 'clamp',
+      easing: Easing.inOut(Easing.cubic)
     }
-  }
+  );
+  const expandProgress = translation ? interpolate(
+    frame,
+    [0, 15],
+    [0, 1],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp'
+    }
+  ) : 1;
+  const baseProgress = translation ? 1 : legendProgress;
 
   const surface: (text: boolean) => React.CSSProperties = (text) => {
     const color = dark ? 'white' : 'black';
@@ -64,17 +55,14 @@ export const BarChart: React.FC<{
   }
   const baseline: React.CSSProperties = {
     ...surface(false),
-    height: `${legendProgresses[0] * 100}%`,
+    height: `${baseProgress * 100}%`,
     width: CHART_STROKE
   }
   
   const share = 1 / source.data.length;
-  function sync(y: number, x: number): number {
-    if (!progressive) {
-      x = 1
-    }
+  function sync(y: number): number {
     return interpolate(
-      legendProgresses[x - 1],
+      baseProgress,
       [y * share, (y + 1) * share],
       [0, 1],
       {
@@ -83,20 +71,12 @@ export const BarChart: React.FC<{
       }
     )
   }
-  function labelSync(y: number, x: number): React.CSSProperties {
-    const a = sync(y, x);
-    const h: React.CSSProperties = 
-    !progressive || x === 1 
-      ? {}
-      : {
-        height: 54 * a
-      }
+  function labelSync(y: number): React.CSSProperties {
     return {
-      ...h,
-      opacity: a
+      opacity: sync(y)
     }
   }
-  const label: React.CSSProperties = {
+  const baseLabel: React.CSSProperties = {
     ...surface(true),
     fontSize: 48,
     marginRight: 12,
@@ -109,64 +89,153 @@ export const BarChart: React.FC<{
     fontFamily: FONT_FAMILY
   }
 
-  let bars: Array<React.ReactElement> = [];
-  function getBars(row: Row, y: number): Array<React.ReactElement> {
-    function bar(v: Row, y: number, x: number): React.CSSProperties {
-      const shouldSync = !progressive || x === 1;
-      return {
-        backgroundImage: barColor(x - 1),
-        width: parseFloat(v.cols[x].value) / maxData * maxLength * (shouldSync ? sync(y, x) : legendProgresses[x - 1]),
-        height: shouldSync
-          ? barStroke
-          : interpolate(
-            frame,
-            [(x - 2) * 100 + 80, (x - 1) * 100],
-            [0, 1],
-            {
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp'
-            }
-          ) * barStroke
+  function getBars(): Array<React.ReactElement> {
+    function isTranslation(x: number, y: number): boolean {
+      if (!translation || !source.lastOperation) throw new Error("never");
+  
+      const [op, i] = source.lastOperation;
+      return (op === INSERT_COLUMN && x === i)
+        || (op === INSERT_ROW && y === i)
+    }
+
+    function bar(x: number, y: number): React.CSSProperties {
+      if (translation) {
+        const isTrans = isTranslation(x, y);
+        let value = parseFloat(source.data[y].cols[x].value);
+        if (isNaN(value)) value = 0;
+        return {
+          backgroundImage: barColor(x - 1),
+          width: value / maxData * maxLength * (!isTrans ? 1 : legendProgress),
+          height: !isTrans
+            ? barStroke
+            : expandProgress * barStroke
+        }
+      } else {
+        return {
+          backgroundImage: barColor(x - 1),
+          width: parseFloat(source.data[y].cols[x].value) / maxData * maxLength * sync(y),
+          height: barStroke
+        }
+      }
+    }
+
+    function label(x: number, y: number): React.CSSProperties {
+      if (translation) {
+        if (isTranslation(x, y)) {
+          return {
+            opacity: legendProgress,
+            height: legendProgress * 54
+          }
+        } else {
+          return {
+            opacity: 1
+          }
+        }
+      } else {
+        return labelSync(y)
       }
     }
 
     const bars = [];
-    for (let x = 1; x < row.cols.length; x++) {
+    for (let y = 0; y < source.data.length; y++) {
+      const barStack = [];
+      for (let x = 1; x < source.cols.length; x++) {
+        barStack.push(
+          <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+            <div style={bar(x, y)} />
+            <span style={{...label(x, y), ...value}}>{source.data[y].cols[x].value}</span>
+          </div>
+        )
+      }
       bars.push(
-        <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-          <div style={bar(row, y, x)} />
-          <span style={{...labelSync(y, x), ...value}}>{row.cols[x].value}</span>
-        </div>
+        <div>{barStack}</div>
       )
     }
     return bars
   }
-  bars = source.data.map(
-    (v, y) => <div> {getBars(v, y)} </div>
-  )
 
-  const legends = [];
-  for (let x = 1; x < source.cols.length; x++) {
-    legends.push(
-      <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', opacity: legendProgresses[x - 1]}}>
-        <div style={{width: 60, height: 60, backgroundImage: barColor(x - 1), margin: 12}}/>
-        <span style={label}>{source.cols[x].title}</span>
-      </div>
-    )
+  function getLegends(): Array<React.ReactElement> {
+    function isTranslation(x: number): boolean {
+      if (!translation || !source.lastOperation) throw new Error("never");
+      const [op, i] = source.lastOperation;
+      return op === INSERT_COLUMN && x === i;
+    }
+
+    function label(x: number): React.CSSProperties {
+      if (translation) {
+        if (isTranslation(x)) {
+          return {
+            opacity: legendProgress
+          }
+        } else {
+          return {
+          }
+        }
+      } else {
+        return labelSync(0)
+      }
+    }
+
+    const legends = [];
+    for (let x = 1; x < source.cols.length; x++) {
+      legends.push(
+        <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', ...label(x)}}>
+          <div style={{width: 60, height: 60, backgroundImage: barColor(x - 1), margin: 12}}/>
+          <span style={baseLabel}>{source.cols[x].title}</span>
+        </div>
+      )
+    }
+    return legends;
+  }
+
+  function getBaselineLabels(): Array<React.ReactElement> {
+    function isTranslation(y: number): boolean {
+      if (!translation || !source.lastOperation) throw new Error("never");
+  
+      const [op, i] = source.lastOperation;
+      return op === INSERT_ROW && i === y;
+    }
+
+    const labelBase: React.CSSProperties = {
+      lineHeight: `${barStroke}px`
+    }
+
+    function label(y: number): React.CSSProperties {
+      if (translation) {
+        if (isTranslation(y)) {
+          return {
+            height: barStroke * expandProgress,
+            opacity: expandProgress
+          }
+        } else {
+          return {
+            height: barStroke
+          }
+        }
+      } else {
+        return {
+          ...labelSync(y),
+          height: barStroke
+        }
+      }
+    }
+
+    const labels = [];
+    for (let y = 0; y < source.data.length; y++) {
+      labels.push(
+        <strong style={{...labelBase, ...label(y)}}>{parse(source.data[y].cols[0].value)}</strong>
+      )
+    }
+    return labels;
   }
 
   return <div style={{width, height, display: 'flex'}}>
-    <div style={{...label, display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', alignItems: 'end'}}>
-      {
-        source.data.map(
-          (v, i) => <strong style={{...labelSync(i, 1), lineHeight: `${barStroke}px`, height: barStroke}}>{parse(v.cols[0].value)}</strong>
-        )
-      }
+    <div style={{...baseLabel, display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', alignItems: 'end'}}>
+      {getBaselineLabels()}
     </div>
     <div style={baseline}/>
-    <div style={{flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly'}}>
-      {bars}
-    </div>
-    <div style={{ position: 'absolute', top: 100, right: 100}}>{legends}</div>
+
+    <div style={{flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly'}}>{getBars()}</div>
+    <div style={{position: 'absolute', top: 100, right: 100}}>{getLegends()}</div>
   </div>
 }
