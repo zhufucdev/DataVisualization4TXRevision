@@ -11,8 +11,11 @@
   "repository": {},
   "license": "UNLICENSED",
   "dependencies": {
+    "@remotion/bundler": "^3.0.28",
     "@remotion/cli": "^3.0.28",
     "@remotion/eslint-config": "^3.0.28",
+    "@remotion/media-utils": "^3.0.28",
+    "@remotion/renderer": "^3.0.28",
     "color": "^4.2.3",
     "eslint": "^8.14.0",
     "html-react-parser": "^3.0.0",
