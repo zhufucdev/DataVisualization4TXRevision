@@ -1,8 +1,3 @@
-export interface DataPair {
-  time: number,
-  value: number
-}
-
 export interface Cell {
   x: number,
   y: number,
@@ -122,4 +117,29 @@ export function insertRow(source: Table, index: number, cells: Array<string>): T
   });
   r.lastOperation = [INSERT_ROW, index];
   return r
+}
+
+export function select(source: Table, col: RegExp): Table {
+  const colIndexs = [], colSlice = [], dataSlice = new Array<Row>();
+  for (let x = 0; x < source.cols.length; x++) {
+    if (col.test(source.cols[x].title)) {
+      colIndexs.push(x);
+      colSlice.push(source.cols[x])
+    }
+  }
+  for (let y = 0; y < source.data.length; y++) {
+    const row = source.data[y];
+    const slice = new Array<Cell>();
+    colIndexs.forEach(c => slice.push(row.cols[c]))
+    dataSlice.push({
+      time: row.time,
+      cols: slice
+    })
+  }
+  return {
+    cols: colSlice,
+    time: source.time,
+    data: dataSlice,
+    lastOperation: source.lastOperation
+  }
 }

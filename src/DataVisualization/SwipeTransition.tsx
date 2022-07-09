@@ -39,10 +39,12 @@ export const SwipeTransition: React.FC<{
 
   return <>
   <AbsoluteFill style={a}>
-    {children[0]}
+    <Sequence from={0} durationInFrames={startFrame + duration} name="A">
+      {children[0]}
+    </Sequence>
   </AbsoluteFill>
   <AbsoluteFill style={b}>
-    <Sequence from={startFrame}>
+    <Sequence from={startFrame} name="B">
       {children[1]}
     </Sequence>
   </AbsoluteFill>
