@@ -2,8 +2,8 @@ import React, { ReactElement, useState } from "react";
 import { DataPair, extractData } from "./hmlutil";
 import { max, Table } from "./formutils";
 import { FONT_FAMILY, CHART_STROKE } from "./constants";
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
-import { barColor, baseColor } from "./colorutils";
+import { Easing, interpolate, useCurrentFrame } from "remotion";
+import { baseColor } from "./colorutils";
 
 const yAxisWidth = 80, xAxisOffset = yAxisWidth + CHART_STROKE + 2, lineStroke = CHART_STROKE * 0.4;
 const framesAwait = 50;
@@ -16,7 +16,8 @@ export const LineChart: React.FC<{
   transition: boolean;
   dark: boolean;
   primaryColor?: string;
-}> = ({ source, width, height, dark, primaryColor }) => {
+  label?: string;
+}> = ({ source, width, height, dark, primaryColor, label }) => {
   const [data, maxData, minData] = extractData(source);
 
   const frame = useCurrentFrame();
@@ -38,15 +39,20 @@ export const LineChart: React.FC<{
   const mainContainer: React.CSSProperties = {
     width, height,
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    position: 'relative'
+  }
+
+  const baseLabel: React.CSSProperties = {
+    ...surface(true),
+    fontFamily: FONT_FAMILY,
+    fontSize: '32px',
   }
   const labelContainer: (vertical: boolean) => React.CSSProperties = (vertical) => {
     const shared = {
-      ...surface(true),
+      ...baseLabel,
       display: 'flex',
       justifyContent: 'space-between',
-      fontFamily: FONT_FAMILY,
-      fontSize: '32px',
       marginRight: 12
     }
     return vertical ? {
@@ -99,6 +105,14 @@ export const LineChart: React.FC<{
     flexGrow: 1,
     position: 'relative'
   }
+  const bottomLabel: React.CSSProperties = {
+    ...surface(true),
+    fontSize: '48px',
+    textAlign: 'right',
+    position: 'absolute',
+    width: '100%',
+    bottom: -70
+  }
 
   const xLength = data[0][data[0].length - 1].time, yLength = maxData - minData;
   function getYLabels(): Array<ReactElement> {
@@ -112,7 +126,7 @@ export const LineChart: React.FC<{
   function getXLabels(): Array<ReactElement> {
     const labels = [], delta = xLength / 8;
     for (let w = 0; w <= delta * 8; w += delta) {
-      labels.push(<strong>{w.toFixed(0)}</strong>)
+      labels.push(<strong>{w.toFixed(0)}s</strong>)
     }
     return labels
   }
@@ -162,13 +176,14 @@ export const LineChart: React.FC<{
       </div>
       <div style={baseline(false)} />
       <div style={labelContainer(false)}>{getXLabels()}</div>
+      <span style={bottomLabel}>{label}</span>
     </div>
     <div style={legendsContainer}>
       {
         source.cols.map((c, i) => 
           <div style={legendContainer}>
             <div style={legendSample(i)}/>
-            <strong style={legendLabel}>{c.title}</strong>
+            <span style={legendLabel}>{c.title}</span>
           </div>
         )
       }

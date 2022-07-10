@@ -1,6 +1,7 @@
 import { Composition } from 'remotion';
 import { DataVisualization } from './DataVisualization';
 import { TDMarkCharts } from './DataVisualization/3DMarkCharts';
+import { ForzaCharts } from './DataVisualization/ForzaCharts';
 import { OScreen } from './DataVisualization/OverviewScreen';
 
 // Each <Composition> is an entry in the sidebar!
@@ -37,6 +38,16 @@ export const RemotionVideo: React.FC = () => {
 				// npx remotion render src/index.tsx <id> out/video.mp4
 				id="3DMarkCharts"
 				component={TDMarkCharts}
+				durationInFrames={300}
+				fps={60}
+				width={1920}
+				height={1080}
+			/>
+			<Composition
+				// You can take the "id" to render a video:
+				// npx remotion render src/index.tsx <id> out/video.mp4
+				id="ForzaCharts"
+				component={ForzaCharts}
 				durationInFrames={180}
 				fps={60}
 				width={1920}

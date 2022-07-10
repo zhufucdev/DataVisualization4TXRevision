@@ -143,3 +143,7 @@ export function select(source: Table, col: RegExp): Table {
     lastOperation: source.lastOperation
   }
 }
+
+export function renameHeaders(source: Table, headers: Array<string>) {
+  headers.forEach((h, i) => source.cols[i].title = h)
+}

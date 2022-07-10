@@ -9,6 +9,6 @@ export const ForzaCharts: React.FC<{}> = () => {
 
   return <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
     <LineChart width={width} height={height} source={ingameBenchmarkResult} 
-      transition={false} dark={true} primaryColor="#FFEE58" />
+      transition={false} dark={true} primaryColor="#FFEE58" label="基准测试" />
   </AbsoluteFill>
 }

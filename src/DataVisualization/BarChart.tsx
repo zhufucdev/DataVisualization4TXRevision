@@ -3,7 +3,7 @@ import { CHART_STROKE, FONT_FAMILY } from "./constants";
 import { INSERT_COLUMN, INSERT_ROW, max, Table } from "./formutils";
 import parse from "html-react-parser";
 import { interpolate, useCurrentFrame, Easing } from "remotion";
-import { barColor } from "./colorutils";
+import { gradientColor } from "./colorutils";
 
 const maxLength = 1200, barStroke = 64;
 
@@ -95,7 +95,7 @@ export const BarChart: React.FC<{
         let value = parseFloat(source.data[y].cols[x].value);
         if (isNaN(value)) value = 0;
         return {
-          backgroundImage: barColor(x - 1, primaryBarColor),
+          backgroundImage: gradientColor(x - 1, primaryBarColor),
           width: value / maxData * maxLength * (!isTrans ? 1 : legendProgress),
           height: !isTrans
             ? barStroke
@@ -103,7 +103,7 @@ export const BarChart: React.FC<{
         }
       } else {
         return {
-          backgroundImage: barColor(x - 1, primaryBarColor),
+          backgroundImage: gradientColor(x - 1, primaryBarColor),
           width: parseFloat(source.data[y].cols[x].value) / maxData * maxLength * sync(y),
           height: barStroke
         }
@@ -171,7 +171,7 @@ export const BarChart: React.FC<{
     for (let x = 1; x < source.cols.length; x++) {
       legends.push(
         <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', ...label(x)}}>
-          <div style={{width: 60, height: 60, backgroundImage: barColor(x - 1, primaryBarColor), margin: 12}}/>
+          <div style={{width: 60, height: 60, backgroundImage: gradientColor(x - 1, primaryBarColor), margin: 12}}/>
           <span style={baseLabel}>{source.cols[x].title}</span>
         </div>
       )
