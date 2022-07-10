@@ -24,7 +24,7 @@ export function parseHML(raw: string): Table {
     const data: Array<Cell> = [];
     for (let x = 2; x < cols.length; x++) {
       data.push({
-        x, y, value: cols[x]
+        x, y, value: cols[x].trim()
       });
     }
 
@@ -54,7 +54,8 @@ export function parseHML(raw: string): Table {
     }
   })
   // parse body
-  lines.forEach((v, y) => {
+  let y = 0;
+  lines.forEach((v) => {
     if (!v.trimStart().startsWith('80')) {
       return;
     }
@@ -63,8 +64,9 @@ export function parseHML(raw: string): Table {
       throw new Error("while parsing HML in line " + (y + 1));
     }
     data.push(parse);
+    y++;
   })
-  return { data, time, cols, lastOperation: undefined }
+  return { data, time, cols, visualEffect: undefined }
 }
 
 /**

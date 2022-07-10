@@ -17,7 +17,7 @@ export const DataVisualization: React.FC<{}> = () => {
       <Sequence from={30} durationInFrames={140}>
         <OScreen />
       </Sequence>
-      <Sequence from={110} durationInFrames={490}>
+      <Sequence from={110} durationInFrames={900}>
         <SwipeTransition startFrame={320}>
           <ExpandingTransition
             top={36} left={36} width={907} height={503}

@@ -1,11 +1,11 @@
 import React from "react";
 import { CHART_STROKE, FONT_FAMILY } from "./constants";
-import { INSERT_COLUMN, INSERT_ROW, max, Table } from "./formutils";
+import { InsertColumn, InsertRow, Insert, max, Table } from "./formutils";
 import parse from "html-react-parser";
 import { interpolate, useCurrentFrame, Easing } from "remotion";
 import { gradientColor } from "./colorutils";
 
-const maxLength = 1200, barStroke = 64;
+const barStroke = 64;
 
 export const BarChart: React.FC<{
   width: number;
@@ -82,11 +82,11 @@ export const BarChart: React.FC<{
 
   function getBars(): Array<React.ReactElement> {
     function isTranslation(x: number, y: number): boolean {
-      if (!translation || !source.lastOperation) throw new Error("never");
+      if (!translation || !source.visualEffect) throw new Error("never");
   
-      const [op, i] = source.lastOperation;
-      return (op === INSERT_COLUMN && x === i)
-        || (op === INSERT_ROW && y === i)
+      const op = source.visualEffect;
+      return (op instanceof Insert && x === op.index)
+        || (op instanceof InsertRow && y === op.index)
     }
 
     function bar(x: number, y: number): React.CSSProperties {
@@ -96,7 +96,7 @@ export const BarChart: React.FC<{
         if (isNaN(value)) value = 0;
         return {
           backgroundImage: gradientColor(x - 1, primaryBarColor),
-          width: value / maxData * maxLength * (!isTrans ? 1 : legendProgress),
+          width: `${100 * value / maxData * (!isTrans ? 1 : legendProgress)}%`,
           height: !isTrans
             ? barStroke
             : expandProgress * barStroke
@@ -104,7 +104,7 @@ export const BarChart: React.FC<{
       } else {
         return {
           backgroundImage: gradientColor(x - 1, primaryBarColor),
-          width: parseFloat(source.data[y].cols[x].value) / maxData * maxLength * sync(y),
+          width: `${100 * parseFloat(source.data[y].cols[x].value) / maxData * sync(y)}%`,
           height: barStroke
         }
       }
@@ -147,9 +147,8 @@ export const BarChart: React.FC<{
 
   function getLegends(): Array<React.ReactElement> {
     function isTranslation(x: number): boolean {
-      if (!translation || !source.lastOperation) throw new Error("never");
-      const [op, i] = source.lastOperation;
-      return op === INSERT_COLUMN && x === i;
+      if (!translation || !source.visualEffect) throw new Error("never");
+      return source.visualEffect instanceof InsertColumn && source.visualEffect.index === x;
     }
 
     function label(x: number): React.CSSProperties {
@@ -181,10 +180,9 @@ export const BarChart: React.FC<{
 
   function getBaselineLabels(): Array<React.ReactElement> {
     function isTranslation(y: number): boolean {
-      if (!translation || !source.lastOperation) throw new Error("never");
-  
-      const [op, i] = source.lastOperation;
-      return op === INSERT_ROW && i === y;
+      if (!translation || !source.visualEffect) throw new Error("never");
+      
+      return source.visualEffect instanceof InsertRow && y === source.visualEffect.index;
     }
 
     const labelBase: React.CSSProperties = {

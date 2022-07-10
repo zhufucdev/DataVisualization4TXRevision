@@ -13,15 +13,54 @@ export interface Row {
   cols: Array<Cell>
 }
 
+interface VisualEffect {
+  readonly name: string
+}
+
 export interface Table {
   cols: Array<Column>,
   time: Date,
   data: Array<Row>,
-  lastOperation: [symbol, number] | undefined
+  visualEffect: VisualEffect | undefined
 }
 
-export const INSERT_COLUMN = Symbol('insert_col');
-export const INSERT_ROW = Symbol('insert_row');
+export abstract class Insert implements VisualEffect {
+  abstract readonly name: string
+  readonly index: number
+  constructor(index: number) {
+    this.index = index
+  }
+}
+
+export class InsertColumn extends Insert {
+  override readonly name = 'insert_column'
+  constructor(index: number) {
+    super(index);
+  }
+}
+
+export class InsertRow extends Insert {
+  override readonly name = 'insert_row';
+  constructor(index: number) {
+    super(index);
+  }
+}
+
+export class ShowAverage {
+  readonly name = 'show_average';
+  readonly section: Section;
+  readonly label: string | ((avg: number) => string)
+  constructor(label: string | ((avg: number) => string), section: Section) {
+    this.label = label;
+    this.section = section;
+  }
+}
+
+export interface Section {
+  column: Column,
+  from: Cell,
+  to: Cell
+}
 
 interface FormBuilder {
   cols: Array<string>,
@@ -46,7 +85,7 @@ export function buildForm(builder: FormBuilder): Table {
         })
       }
     }),
-    lastOperation: undefined
+    visualEffect: undefined
   }
 }
 
@@ -78,7 +117,7 @@ function deepCopy(source: Table): Table {
   return {
     time: source.time,
     cols, data,
-    lastOperation: source.lastOperation
+    visualEffect: source.visualEffect
   }
 }
 
@@ -93,8 +132,11 @@ export function insertColumn(source: Table, index: number, cells: Array<string>)
   for (let i = 0; i < source.data.length; i++) {
     r.data[i].time = current;
     r.data[i].cols.splice(index, 0, { x: source.cols.length, y: i, value: cells[i + 1] });
+    for (let x = i + 1; x < source.cols.length + 1; x++) {
+      r.data[i].cols[x].x = x;
+    }
   }
-  r.lastOperation = [INSERT_COLUMN, index];
+  r.visualEffect = new InsertColumn(index);
   return r
 }
 
@@ -105,17 +147,20 @@ export function insertRow(source: Table, index: number, cells: Array<string>): T
 
   const current = new Date();
   const r = deepCopy(source);
-  r.data.splice(index, 0, { 
+  r.data.splice(index, 0, {
     time: current,
     cols: cells.map((c, i) => {
+      for (let y = index; y < source.data.length; y++) {
+        r.data[y].cols.forEach(c => c.y = y + 1);
+      }
       return {
         x: i,
-        y: source.data.length,
+        y: index,
         value: c
       }
     })
   });
-  r.lastOperation = [INSERT_ROW, index];
+  r.visualEffect = new InsertRow(index);
   return r
 }
 
@@ -130,17 +175,17 @@ export function select(source: Table, col: RegExp): Table {
   for (let y = 0; y < source.data.length; y++) {
     const row = source.data[y];
     const slice = new Array<Cell>();
-    colIndexs.forEach(c => slice.push(row.cols[c]))
+    colIndexs.forEach(c => slice.push(row.cols[c]));
     dataSlice.push({
       time: row.time,
       cols: slice
-    })
+    });
   }
   return {
     cols: colSlice,
     time: source.time,
     data: dataSlice,
-    lastOperation: source.lastOperation
+    visualEffect: source.visualEffect
   }
 }
 
