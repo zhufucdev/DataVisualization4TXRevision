@@ -14,7 +14,7 @@ export const RemotionVideo: React.FC = () => {
 				// npx remotion render src/index.tsx <id> out/video.mp4
 				id="Main"
 				component={DataVisualization}
-				durationInFrames={700}
+				durationInFrames={1000}
 				fps={60}
 				width={1920}
 				height={1080}
@@ -48,7 +48,7 @@ export const RemotionVideo: React.FC = () => {
 				// npx remotion render src/index.tsx <id> out/video.mp4
 				id="ForzaCharts"
 				component={ForzaCharts}
-				durationInFrames={300}
+				durationInFrames={600}
 				fps={60}
 				width={1920}
 				height={1080}
