@@ -77,7 +77,7 @@ export const ForzaCharts: React.FC<{}> = () => {
           transition={true} dark={true} primaryColor={color} label="实际操作" />
       </AbsoluteFill>
     </Sequence>
-    <Sequence from={420} durationInFrames={50}>
+    <Sequence from={420}>
       <AbsoluteFill style={container}>
         <LineChart width={width} height={height} source={test4}
           transition={true} dark={true} primaryColor={color} label="实际操作" />
