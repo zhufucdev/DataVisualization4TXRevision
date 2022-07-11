@@ -25,15 +25,25 @@ export interface Table {
 }
 
 export abstract class Insert implements VisualEffect {
-  abstract readonly name: string
-  readonly index: number
+  abstract readonly name: string;
+  readonly index: number;
   constructor(index: number) {
     this.index = index
   }
 }
 
+export abstract class Partial implements VisualEffect {
+  abstract readonly name: string;
+  readonly section: Section;
+  readonly label: string | ((avg: number) => string)
+  constructor(label: string | ((avg: number) => string), section: Section) {
+    this.label = label;
+    this.section = section;
+  }
+}
+
 export class InsertColumn extends Insert {
-  override readonly name = 'insert_column'
+  override readonly name = 'insert_column';
   constructor(index: number) {
     super(index);
   }
@@ -46,13 +56,17 @@ export class InsertRow extends Insert {
   }
 }
 
-export class ShowAverage {
-  readonly name = 'show_average';
-  readonly section: Section;
-  readonly label: string | ((avg: number) => string)
+export class ShowAverage extends Partial {
+  override readonly name = 'show_average';
   constructor(label: string | ((avg: number) => string), section: Section) {
-    this.label = label;
-    this.section = section;
+    super(label, section);
+  }
+}
+
+export class ShowMaximun extends Partial {
+  override readonly name = 'show_max';
+  constructor(label: string | ((avg: number) => string), section: Section) {
+    super(label, section);
   }
 }
 
@@ -102,7 +116,7 @@ export function max(source: Table, isGreater: (current: Cell, other: Cell) => bo
   return maxData
 }
 
-function deepCopy(source: Table): Table {
+export function deepCopy(source: Table): Table {
   const cols = source.cols.map(v => { return { title: v.title } });
   const data = source.data.map(d => {
     return {

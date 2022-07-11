@@ -1,6 +1,6 @@
 import React, { ReactElement, useState } from "react";
 import { DataPair, extractData } from "./hmlutil";
-import { Table, ShowAverage } from "./formutils";
+import { Table, ShowAverage, Partial, ShowMaximun } from "./formutils";
 import { FONT_FAMILY, CHART_STROKE } from "./constants";
 import { Easing, interpolate, useCurrentFrame } from "remotion";
 import { baseColor } from "./colorutils";
@@ -178,78 +178,160 @@ export const LineChart: React.FC<{
   function getAuxiliaryLines(): ReactElement | null {
     if (!transition) return null;
     if (!source.visualEffect) throw new Error("never");
-    if (!(source.visualEffect instanceof ShowAverage)) return null;
 
-    const section = source.visualEffect.section;
+    const section = (source.visualEffect as Partial).section;
     const set = data[source.cols.indexOf(section.column)];
-    let sum = 0;
-    for (let y = section.from.y; y <= section.to.y; y++) {
-      sum += set[y].value;
-    }
-    const value = sum / (section.to.y - section.from.y);
-    const first = set[section.from.y], last = set[section.to.y];
 
-    const color = dark ? 'white' : 'black';
+    function labelStr(effect: Partial, value: number) {
+        return typeof effect.label === 'function'
+          ? effect.label(value)
+          : effect.label.replace(/%s/g, value.toString());
+    }
 
-    const commonStyle: React.CSSProperties = {
-      position: 'absolute',
-      bottom: `${100 * (value - minData) / yLength}%`,
-      filter: 'drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.24))'
+    function dottedLine(vertical: boolean): React.CSSProperties {
+      const color = dark ? 'white' : 'black';
+      return vertical ? {
+        background: `linear-gradient(
+          to left,
+          transparent 0%,
+          transparent 50%,
+          ${color} 50%,
+          ${color} 100%
+        )`,
+        backgroundSize: `20px ${auxiliaryLineStroke}px`,
+        backgroundRepeat: 'repeat-x',
+      } : {
+        background: `linear-gradient(
+          to bottom,
+          transparent 0%,
+          transparent 50%,
+          ${color} 50%,
+          ${color} 100%
+        )`,
+        backgroundSize: `${auxiliaryLineStroke}px 20px`,
+        backgroundRepeat: 'repeat-y',
+      }
     }
-    const line: React.CSSProperties = {
-      ...commonStyle,
-      left: `${100 * first.time / xLength}%`,
-      background: `linear-gradient(
-        to left,
-        transparent 0%,
-        transparent 50%,
-        ${color} 50%,
-        ${color} 100%
-      )`,
-      backgroundSize: `20px ${auxiliaryLineStroke}px`,
-      backgroundRepeat: 'repeat-x',
-      width: `${100 * (last.time - first.time) / xLength * drawingProgress}%`,
-      height: auxiliaryLineStroke
+
+    function getAverageLine(effect: ShowAverage): ReactElement {
+      let sum = 0;
+      for (let y = section.from.y; y <= section.to.y; y++) {
+        sum += set[y].value;
+      }
+      const value = sum / (section.to.y - section.from.y);
+      const first = set[section.from.y], last = set[section.to.y];
+  
+      const commonStyle: React.CSSProperties = {
+        position: 'absolute',
+        bottom: `${100 * (value - minData) / yLength}%`,
+        filter: 'drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.24))'
+      }
+      const line: React.CSSProperties = {
+        ...commonStyle,
+        ...dottedLine(true),
+        left: `${100 * first.time / xLength}%`,
+        width: `${100 * (last.time - first.time) / xLength * drawingProgress}%`,
+        height: auxiliaryLineStroke
+      }
+      function label(): React.CSSProperties {
+        framesAwait = framesAwait || 0;
+        const prototype: React.CSSProperties = {
+          ...surface(true),
+          ...legendLabel,
+          ...commonStyle,
+          marginLeft: '12px',
+          whiteSpace: 'nowrap'
+        }
+        return first.time / xLength <= 0.01 ?
+          {
+            ...prototype,
+            right: '100%',
+            opacity: interpolate(
+              frame,
+              [framesAwait, framesAwait + 15],
+              [0, 1]
+            ),
+            marginBottom: -12
+          } : {
+            ...prototype,
+            left: `${100 * first.time / xLength}%`,
+            marginBottom: 12,
+            opacity: interpolate(
+              frame,
+              [framesAwait + 10, framesAwait + 25],
+              [0, 1]
+            ),
+            background: 'rgba(0, 0, 0, 0.2)'
+          }
+      }
+  
+      return <>
+        <div style={line} />
+        <span style={label()}>{labelStr(effect, value)}</span>
+      </>
     }
-    function label(): React.CSSProperties {
+  
+    function getMaxLine(effect: ShowMaximun): ReactElement {
+      const section = effect.section;
+      const set = data[source.cols.indexOf(section.column)];
+  
+      let max = set[section.from.y];
+      for (let y = section.from.y + 1; y <= section.to.y; y++) {
+        const current = set[y];
+        if (current.value > max.value) max = current;
+      }
+  
       framesAwait = framesAwait || 0;
-      const prototype: React.CSSProperties = {
+      const commonStyle: React.CSSProperties = {
+        position: 'absolute',
+        filter: 'drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.24))'
+      }
+      const hor: React.CSSProperties = {
+        ...dottedLine(false),
+        ...commonStyle,
+        bottom: 0,
+        left: `${100 * max.time / xLength}%`,
+        width: auxiliaryLineStroke,
+        height: `${100 * (max.value - minData) / yLength * drawingProgress}%`
+      }
+      const ver: React.CSSProperties = {
+        ...dottedLine(true),
+        ...commonStyle,
+        bottom: `${100 * (max.value - minData) / yLength}%`,
+        left: 0,
+        width: `${100 * max.time / xLength * drawingProgress}%`,
+        height: auxiliaryLineStroke
+      }
+      const label: React.CSSProperties = {
         ...surface(true),
         ...legendLabel,
         ...commonStyle,
-        height: 28,
         marginLeft: '12px',
-        textAlign: 'center',
         whiteSpace: 'nowrap',
+        bottom: `${100 * (max.value - minData) / yLength}%`,
+        right: '100%',
+        marginBottom: -12,
+        opacity: interpolate(
+          frame,
+          [framesAwait, framesAwait + 15],
+          [0, 1]
+        )
       }
-      return first.time / xLength <= 0.001 ?
-        {
-          ...prototype,
-          right: '100%',
-          opacity: interpolate(
-            frame,
-            [framesAwait, framesAwait + 15],
-            [0, 1]
-          )
-        } : {
-          ...prototype,
-          left: `${100 * last.time / xLength}%`,
-          opacity: interpolate(
-            frame,
-            [framesAwait + 40, framesAwait + 55],
-            [0, 1]
-          )
-        }
+  
+      return <>
+        <div style={hor}/>
+        <div style={ver}/>
+        <span style={label}>{labelStr(effect, max.value)}</span>
+      </>
     }
 
-    const labelStr =
-      typeof source.visualEffect.label === 'function'
-        ? source.visualEffect.label(value)
-        : source.visualEffect.label.replace(/%s/g, value.toString());
-    return <>
-      <div style={line} />
-      <span style={label()}>{labelStr}</span>
-    </>
+    if (source.visualEffect instanceof ShowAverage) {
+      return getAverageLine(source.visualEffect);
+    } else if (source.visualEffect instanceof ShowMaximun) {
+      return getMaxLine(source.visualEffect);
+    } else {
+      return null;
+    }
   }
 
   return <>
