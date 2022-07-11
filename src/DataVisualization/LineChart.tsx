@@ -114,6 +114,9 @@ export const LineChart: React.FC<{
     width: '100%',
     bottom: -70
   }
+  const shadow: React.CSSProperties = {
+    filter: `drop-shadow(3px 3px 2px rgba(${dark ? '0, 0, 0, 0.24' : '255, 255, 255, 0.8'}))`
+  }
 
   function friendlyNum(origin: number): string {
     return origin.toFixed(0);
@@ -222,9 +225,9 @@ export const LineChart: React.FC<{
       const first = set[section.from.y], last = set[section.to.y];
   
       const commonStyle: React.CSSProperties = {
+        ...shadow,
         position: 'absolute',
-        bottom: `${100 * (value - minData) / yLength}%`,
-        filter: 'drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.24))'
+        bottom: `${100 * (value - minData) / yLength}%`
       }
       const line: React.CSSProperties = {
         ...commonStyle,
@@ -283,8 +286,8 @@ export const LineChart: React.FC<{
   
       framesAwait = framesAwait || 0;
       const commonStyle: React.CSSProperties = {
-        position: 'absolute',
-        filter: 'drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.24))'
+        ...shadow,
+        position: 'absolute'
       }
       const hor: React.CSSProperties = {
         ...dottedLine(false),
