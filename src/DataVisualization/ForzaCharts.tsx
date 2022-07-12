@@ -33,15 +33,15 @@ function showAverageTemp(dataset: Table, colIndex: number): ShowAverage {
 }
 
 test1.visualEffect = showAverageFPS(test1);
-test2.visualEffect = showAverageFPS(test2);
-test3.visualEffect = new ShowMaximun(
+test2.visualEffect = new ShowMaximun(
   (a) => `最高${a.toFixed(0)}%`,
   {
-    column: test3.cols[1],
-    from: test3.data[0].cols[1],
-    to: test3.data[test3.data.length - 1].cols[1]
+    column: test2.cols[1],
+    from: test2.data[0].cols[1],
+    to: test2.data[test2.data.length - 1].cols[1]
   }
 )
+test3.visualEffect = showAverageFPS(test3);
 test4.visualEffect = showAverageTemp(test4, 4);
 test5.visualEffect = showAverageTemp(test5, 3);
 

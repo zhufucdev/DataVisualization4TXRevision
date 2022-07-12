@@ -12,7 +12,7 @@ const test1: Table = buildForm({
   ]
 })
 const test2 = insertColumn(test1, 2, ['Port Royal', '5264', '6268', '12649']);
-const test3 = insertRow(test2, 0, ['RTX 3060 (105W)', '8250', '4693']);
+const test3 = insertRow(test2, 0, ['RTX 3060 (115W)', '8250', '4693']);
 
 export const TDMarkCharts: React.FC<{}> = () => {
   const video = useVideoConfig();
