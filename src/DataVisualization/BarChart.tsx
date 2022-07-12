@@ -15,8 +15,6 @@ export const BarChart: React.FC<{
   dark: boolean;
   primaryBarColor?: string;
 }> = ({width, height, source, translation, dark, primaryBarColor}) => {
-  
-
   const maxData = parseFloat(max(source, (a, b) => parseFloat(a.value) > parseFloat(b.value)).value);
   const frame = useCurrentFrame();
   const legendProgress = interpolate(
@@ -85,7 +83,7 @@ export const BarChart: React.FC<{
       if (!translation || !source.visualEffect) throw new Error("never");
   
       const op = source.visualEffect;
-      return (op instanceof Insert && x === op.index)
+      return (op instanceof InsertColumn && x === op.index)
         || (op instanceof InsertRow && y === op.index)
     }
 
