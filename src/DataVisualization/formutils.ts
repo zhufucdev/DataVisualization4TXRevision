@@ -178,25 +178,35 @@ export function insertRow(source: Table, index: number, cells: Array<string>): T
   return r
 }
 
-export function select(source: Table, col: RegExp): Table {
-  const colIndexs = [], colSlice = [], dataSlice = new Array<Row>();
+export function select(source: Table, ...col: RegExp[]): Table {
+  const colSlice = [], dataSlice = new Array<Row>();
   for (let x = 0; x < source.cols.length; x++) {
-    if (col.test(source.cols[x].title)) {
-      colIndexs.push(x);
-      colSlice.push(source.cols[x])
+    const title = source.cols[x].title;
+    
+    for (let i = 0; i < col.length; i++) {
+      if (title.match(col[i])) {
+        colSlice.push({
+          index: i,
+          origin: x,
+          col: source.cols[x]
+        });
+      }
     }
   }
+
+  colSlice.sort((a, b) => a.index - b.index);
+
   for (let y = 0; y < source.data.length; y++) {
     const row = source.data[y];
     const slice = new Array<Cell>();
-    colIndexs.forEach(c => slice.push(row.cols[c]));
+    colSlice.forEach((c, i) => slice[i] = row.cols[c.origin]);
     dataSlice.push({
       time: row.time,
       cols: slice
     });
   }
   return {
-    cols: colSlice,
+    cols: colSlice.map(c => c.col),
     time: source.time,
     data: dataSlice,
     visualEffect: source.visualEffect

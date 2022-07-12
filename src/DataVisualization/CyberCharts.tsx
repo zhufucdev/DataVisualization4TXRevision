@@ -1,11 +1,11 @@
 import React from "react";
 import { AbsoluteFill, Sequence, useVideoConfig } from "remotion";
-import { balancedResult, basicResult, performanceResult } from "./Data/cyberpunk";
+import { qualityResult, basicResult, performanceResult } from "./Data/cyberpunk";
 import { ShowAverage } from "./formutils";
 import { LineChart } from "./LineChart";
 
 const test1 = basicResult,
-  test2 = balancedResult,
+  test2 = qualityResult,
   test3 = performanceResult;
 
 test1.visualEffect = new ShowAverage(

@@ -1,10 +1,10 @@
 import { Table, select, renameHeaders } from "../formutils";
 import { parseHML } from "../hmlutil";
 
-const newHeaders = ['CPU温度（℃）', 'CPU功耗（W）', 'FPS'];
+const newHeaders = ['CPU利用率（%）', 'GPU利用率（%）', 'CPU温度（℃）', 'GPU温度（%）', 'FPS'];
 
 export function proceed(raw: string): Table {
-  const r = select(parseHML(raw), /(framerate)|(temp)|(power)/gi);
+  const r = select(parseHML(raw), /((?<!ram) usage)/gi, /framerate/gi, /temp/gi);
   renameHeaders(r, newHeaders);
   return r
 }
