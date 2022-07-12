@@ -14,18 +14,18 @@ export const LineChart: React.FC<{
   width: number;
   height: number;
   framesAwait?: number;
-  transition: boolean;
+  translation: boolean;
   dark: boolean;
   primaryColor?: string;
   label?: string;
-}> = ({ source, width, height, framesAwait, transition, dark, primaryColor, label }) => {
+}> = ({ source, width, height, framesAwait, translation, dark, primaryColor, label }) => {
   const [data, maxData, minData] = extractData(source);
 
   const frame = useCurrentFrame();
   framesAwait = framesAwait || 0;
   const drawingProgress = interpolate(
     frame,
-    [framesAwait, framesAwait + (transition ? 50 : 90)],
+    [framesAwait, framesAwait + (translation ? 50 : 90)],
     [0, 1],
     {
       extrapolateLeft: 'clamp',
@@ -148,7 +148,7 @@ export const LineChart: React.FC<{
       if (length < 0.002) {
         length = 0.002;
       }
-      const progressiveLength = transition ? length : interpolate(
+      const progressiveLength = translation ? length : interpolate(
         drawingProgress,
         [dots[0].time / xLength, dots[1].time / xLength],
         [0, length],
@@ -179,11 +179,11 @@ export const LineChart: React.FC<{
   }
 
   function getAuxiliaryLines(): ReactElement | null {
-    if (!transition) return null;
+    if (!translation) return null;
     if (!source.visualEffect) throw new Error("never");
 
     const section = (source.visualEffect as Partial).section;
-    const set = data[source.cols.indexOf(section.column)];
+    const set = data[section.column];
 
     function labelStr(effect: Partial, value: number) {
         return typeof effect.label === 'function'
@@ -218,11 +218,11 @@ export const LineChart: React.FC<{
 
     function getAverageLine(effect: ShowAverage): ReactElement {
       let sum = 0;
-      for (let y = section.from.y; y <= section.to.y; y++) {
+      for (let y = section.from; y <= section.to; y++) {
         sum += set[y].value;
       }
-      const value = sum / (section.to.y - section.from.y);
-      const first = set[section.from.y], last = set[section.to.y];
+      const value = sum / (section.to - section.from);
+      const first = set[section.from], last = set[section.to];
   
       const commonStyle: React.CSSProperties = {
         ...shadow,
@@ -276,10 +276,10 @@ export const LineChart: React.FC<{
   
     function getMaxLine(effect: ShowMaximun): ReactElement {
       const section = effect.section;
-      const set = data[source.cols.indexOf(section.column)];
+      const set = data[section.column];
   
-      let max = set[section.from.y];
-      for (let y = section.from.y + 1; y <= section.to.y; y++) {
+      let max = set[section.from];
+      for (let y = section.from + 1; y <= section.to; y++) {
         const current = set[y];
         if (current.value > max.value) max = current;
       }
