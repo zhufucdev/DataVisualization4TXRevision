@@ -49,10 +49,6 @@ export const OItem: React.FC<{
     color: dark ? 'white' : 'black'
   }
 
-  const iconEle = icon ? (
-    <Img src={icon} style={iconStyle} />
-  ) : undefined
-
   const maskAlpha = expandingProgress ? interpolate(
     expandingProgress,
     [0, 1],
@@ -72,7 +68,7 @@ export const OItem: React.FC<{
 
   return (
   <>
-    <Img src={cover} style={{...coverStyle, ...shadow, objectFit: 'cover'}} />
+    {cover ? <Img src={cover} style={{...coverStyle, ...shadow, objectFit: 'cover'}} /> : undefined}
     <div style={{...coverStyle, background, opacity: maskAlpha }} />
     <div style={{
       ...coverStyle,
@@ -81,7 +77,7 @@ export const OItem: React.FC<{
     }}></div>
     <div style={titleContainer}>
       <div style={center}>
-        {iconEle}
+        {icon ? <Img src={icon} style={iconStyle} /> : undefined}
         <strong style={{...titleStyle, ...surface}}>{ title }</strong>
       </div>
       <p style={{...subtitleStyle, ...surface}}>{subtitle}</p>
