@@ -1,6 +1,6 @@
 import { proceed } from "./common";
 
-const basicData = `
+export const basicData = `
 00, 12-07-2022 16:50:18, Hardware monitoring log v1.6 
 01, 12-07-2022 16:50:18, NVIDIA GeForce RTX 3060 Laptop GPU,Intel(R) Iris(R) Xe Graphics
 02, 12-07-2022 16:50:18, GPU1 core clock     ,GPU1 power          ,CPU temperature     ,CPU usage           ,CPU clock           ,CPU power           ,RAM usage           ,Commit charge       ,Framerate           ,GPU1 temperature    ,GPU1 usage          

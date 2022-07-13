@@ -1,7 +1,9 @@
 import { Composition } from 'remotion';
 import { DataVisualization } from './DataVisualization';
 import { TDMarkCharts } from './DataVisualization/3DMarkCharts';
+import { CyberCharts } from './DataVisualization/CyberCharts';
 import { ForzaCharts } from './DataVisualization/ForzaCharts';
+import { OdysseyCharts } from './DataVisualization/OdysseyCharts';
 import { OScreen } from './DataVisualization/OverviewScreen';
 
 // Each <Composition> is an entry in the sidebar!
@@ -14,7 +16,7 @@ export const RemotionVideo: React.FC = () => {
 				// npx remotion render src/index.tsx <id> out/video.mp4
 				id="Main"
 				component={DataVisualization}
-				durationInFrames={1200}
+				durationInFrames={3000}
 				fps={60}
 				width={1920}
 				height={1080}
@@ -24,8 +26,6 @@ export const RemotionVideo: React.FC = () => {
 				}}
 			/>
 			<Composition
-				// You can take the "id" to render a video:
-				// npx remotion render src/index.tsx <id> out/video.mp4
 				id="Overview"
 				component={OScreen}
 				durationInFrames={180}
@@ -34,8 +34,6 @@ export const RemotionVideo: React.FC = () => {
 				height={1080}
 			/>
 			<Composition
-				// You can take the "id" to render a video:
-				// npx remotion render src/index.tsx <id> out/video.mp4
 				id="3DMarkCharts"
 				component={TDMarkCharts}
 				durationInFrames={300}
@@ -44,11 +42,25 @@ export const RemotionVideo: React.FC = () => {
 				height={1080}
 			/>
 			<Composition
-				// You can take the "id" to render a video:
-				// npx remotion render src/index.tsx <id> out/video.mp4
 				id="ForzaCharts"
 				component={ForzaCharts}
 				durationInFrames={600}
+				fps={60}
+				width={1920}
+				height={1080}
+			/>
+			<Composition
+				id="CyberpunkCharts"
+				component={CyberCharts}
+				durationInFrames={1600}
+				fps={60}
+				width={1920}
+				height={1080}
+			/>
+			<Composition
+				id="OdysseyCharts"
+				component={OdysseyCharts}
+				durationInFrames={1600}
 				fps={60}
 				width={1920}
 				height={1080}
