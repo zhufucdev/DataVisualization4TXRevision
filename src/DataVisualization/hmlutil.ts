@@ -1,7 +1,8 @@
 import { Table, Row, Column, Cell } from "./formutils";
 
 export interface DataPair {
-  time: number,
+  label: string,
+  index: number,
   value: number
 }
 
@@ -74,23 +75,32 @@ export function parseHML(raw: string): Table {
  * @param hml The data source to extract from.
  * @returns Extracted, Maxinum, Mininum Data
  */
-export function extractData(hml: Table): [Array<Array<DataPair>>, number, number] {
-  const starter = hml.data[0].time;
-  let max = parseFloat(hml.data[0].cols[0].value);
+export function extractData(hml: Table, reference: 'time' | 'header'): [DataPair[][], number, number] {
+  const starter = hml.data[0].time, startX = reference === 'time' ? 0 : 1;
+  let max = parseFloat(hml.data[startX].cols[0].value);
   let min = max;
-  const data = hml.cols.map((_, c) => hml.data.map(v => {
-    const value = parseFloat(v.cols[c].value);
-    if (value > max) {
-      max = value;
-    } else if (value < min) {
-      min = value;
+  const data: DataPair[][] = [];
+  for (let x = startX; x < hml.cols.length; x++) {
+    const series = [];
+    for (let y = 0; y < hml.data.length; y++) {
+      const row = hml.data[y]
+      const value = parseFloat(row.cols[x].value);
+      let timeIndex = (row.time.getTime() - starter.getTime()) / 1000;
+      if (y !== 0 && timeIndex === 0) {
+        timeIndex = y;
+      }
+      const label = reference === 'time'
+        ? timeIndex + 's'
+        : row.cols[0].value;
+      if (value > max) {
+        max = value;
+      } else if (value < min) {
+        min = value;
+      }
+      series.push({ value, label, index: timeIndex });
     }
-    const r: DataPair = {
-      value,
-      time: (v.time.getTime() - starter.getTime()) / 1000
-    }
-    return r
-  }))
+    data.push(series);
+  }
 
   return [data, max, min];
 }

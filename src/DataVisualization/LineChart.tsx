@@ -4,10 +4,20 @@ import { Table, ShowAverage, Partial, ShowMaximun } from "./formutils";
 import { FONT_FAMILY, CHART_STROKE } from "./constants";
 import { Easing, interpolate, useCurrentFrame } from "remotion";
 import { baseColor } from "./colorutils";
+import htmlParser from "html-react-parser";
 
 const yAxisWidth = 80, xAxisOffset = yAxisWidth + CHART_STROKE + 2,
   lineStroke = CHART_STROKE * 0.3, auxiliaryLineStroke = CHART_STROKE * 0.5;
 const hWRate = 0.3854140920931187;
+
+export const XAxisLabel: React.FC<{
+  children: ReactElement | string
+}> = ({ children }) => {
+  const style: React.CSSProperties = {
+    fontSize: 32
+  }
+  return <strong style={style}>{children}</strong>
+}
 
 export const LineChart: React.FC<{
   source: Table;
@@ -17,9 +27,10 @@ export const LineChart: React.FC<{
   translation: boolean;
   dark: boolean;
   primaryColor?: string;
-  label?: string;
-}> = ({ source, width, height, framesAwait, translation, dark, primaryColor, label }) => {
-  const [data, maxData, minData] = extractData(source);
+  label?: string | ReactElement;
+  reference?: 'time' | 'header'
+}> = ({ source, reference, width, height, framesAwait, translation, dark, primaryColor, label }) => {
+  const [data, maxData, minData] = extractData(source, reference || 'time');
 
   const frame = useCurrentFrame();
   framesAwait = framesAwait || 0;
@@ -122,7 +133,7 @@ export const LineChart: React.FC<{
     return origin.toFixed(0);
   }
 
-  const xLength = data[0][data[0].length - 1].time, yLength = maxData - minData;
+  const xLength = data[0][data[0].length - 1].index, yLength = maxData - minData;
   function getYLabels(): Array<ReactElement> {
     const labels = [], delta = yLength / 4;
     for (let i = 4; i >= 0; i--) {
@@ -132,16 +143,20 @@ export const LineChart: React.FC<{
   }
 
   function getXLabels(): Array<ReactElement> {
-    const labels = [], delta = xLength / 8;
-    for (let i = 0; i <= 8; i++) {
-      labels.push(<strong>{friendlyNum(delta * i)}s</strong>)
+    if (reference === 'time') {
+      const labels = [], delta = xLength / 8;
+      for (let i = 0; i <= 8; i++) {
+        labels.push(<strong>{friendlyNum(delta * i)}s</strong>)
+      }
+      return labels
+    } else {
+      return data[0].map(v => <strong>{v.label}</strong>);
     }
-    return labels
   }
 
   function getLines(): Array<ReactElement> {
     function line(dots: [DataPair, DataPair]): React.CSSProperties {
-      const deltaX = (dots[1].time - dots[0].time) / xLength, deltaY = (dots[1].value - dots[0].value) / yLength;
+      const deltaX = (dots[1].index - dots[0].index) / xLength, deltaY = (dots[1].value - dots[0].value) / yLength;
       const slope = deltaY * hWRate / deltaX;
       const a = Math.atan(slope);
       let length = Math.sqrt(deltaX ** 2 + (deltaY * hWRate) ** 2);
@@ -150,7 +165,7 @@ export const LineChart: React.FC<{
       }
       const progressiveLength = translation ? length : interpolate(
         drawingProgress,
-        [dots[0].time / xLength, dots[1].time / xLength],
+        [dots[0].index / xLength, dots[1].index / xLength],
         [0, length],
         {
           extrapolateLeft: 'clamp',
@@ -161,7 +176,7 @@ export const LineChart: React.FC<{
         position: 'absolute',
         height: lineStroke,
         width: `${100 * progressiveLength}%`,
-        left: `${100 * dots[0].time / xLength}%`,
+        left: `${100 * dots[0].index / xLength}%`,
         bottom: `${100 * (dots[0].value - minData) / yLength}%`,
         transform: `rotate(${-a}rad)`,
         transformOrigin: 'left center'
@@ -186,9 +201,9 @@ export const LineChart: React.FC<{
     const set = data[section.column];
 
     function labelStr(effect: Partial, value: number) {
-        return typeof effect.label === 'function'
-          ? effect.label(value)
-          : effect.label.replace(/%s/g, value.toString());
+      return typeof effect.label === 'function'
+        ? effect.label(value)
+        : effect.label.replace(/%s/g, value.toString());
     }
 
     function dottedLine(vertical: boolean): React.CSSProperties {
@@ -223,7 +238,7 @@ export const LineChart: React.FC<{
       }
       const value = sum / (section.to - section.from);
       const first = set[section.from], last = set[section.to];
-  
+
       const commonStyle: React.CSSProperties = {
         ...shadow,
         position: 'absolute',
@@ -232,8 +247,8 @@ export const LineChart: React.FC<{
       const line: React.CSSProperties = {
         ...commonStyle,
         ...dottedLine(true),
-        left: `${100 * first.time / xLength}%`,
-        width: `${100 * (last.time - first.time) / xLength * drawingProgress}%`,
+        left: `${100 * first.index / xLength}%`,
+        width: `${100 * (last.index - first.index) / xLength * drawingProgress}%`,
         height: auxiliaryLineStroke
       }
       function label(): React.CSSProperties {
@@ -245,7 +260,7 @@ export const LineChart: React.FC<{
           marginLeft: '12px',
           whiteSpace: 'nowrap'
         }
-        return first.time / xLength <= 0.01 ?
+        return first.index / xLength <= 0.01 ?
           {
             ...prototype,
             right: '100%',
@@ -257,7 +272,7 @@ export const LineChart: React.FC<{
             marginBottom: -12
           } : {
             ...prototype,
-            left: `${100 * first.time / xLength}%`,
+            left: `${100 * first.index / xLength}%`,
             marginBottom: 12,
             opacity: interpolate(
               frame,
@@ -267,23 +282,23 @@ export const LineChart: React.FC<{
             background: 'rgba(0, 0, 0, 0.2)'
           }
       }
-  
+
       return <>
         <div style={line} />
         <span style={label()}>{labelStr(effect, value)}</span>
       </>
     }
-  
+
     function getMaxLine(effect: ShowMaximun): ReactElement {
       const section = effect.section;
       const set = data[section.column];
-  
+
       let max = set[section.from];
       for (let y = section.from + 1; y <= section.to; y++) {
         const current = set[y];
         if (current.value > max.value) max = current;
       }
-  
+
       framesAwait = framesAwait || 0;
       const commonStyle: React.CSSProperties = {
         ...shadow,
@@ -293,7 +308,7 @@ export const LineChart: React.FC<{
         ...dottedLine(false),
         ...commonStyle,
         bottom: 0,
-        left: `${100 * max.time / xLength}%`,
+        left: `${100 * max.index / xLength}%`,
         width: auxiliaryLineStroke,
         height: `${100 * (max.value - minData) / yLength * drawingProgress}%`
       }
@@ -302,7 +317,7 @@ export const LineChart: React.FC<{
         ...commonStyle,
         bottom: `${100 * (max.value - minData) / yLength}%`,
         left: 0,
-        width: `${100 * max.time / xLength * drawingProgress}%`,
+        width: `${100 * max.index / xLength * drawingProgress}%`,
         height: auxiliaryLineStroke
       }
       const label: React.CSSProperties = {
@@ -320,10 +335,10 @@ export const LineChart: React.FC<{
           [0, 1]
         )
       }
-  
+
       return <>
-        <div style={hor}/>
-        <div style={ver}/>
+        <div style={hor} />
+        <div style={ver} />
         <span style={label}>{labelStr(effect, max.value)}</span>
       </>
     }
@@ -353,7 +368,7 @@ export const LineChart: React.FC<{
     </div>
     <div style={legendsContainer}>
       {
-        source.cols.map((c, i) =>
+        source.cols.slice(reference === 'time' ? 0 : 1).map((c, i) =>
           <div style={legendContainer}>
             <div style={legendSample(i)} />
             <span style={legendLabel}>{c.title}</span>
@@ -362,4 +377,9 @@ export const LineChart: React.FC<{
       }
     </div>
   </>
+}
+
+LineChart.defaultProps = {
+  reference: 'time',
+  framesAwait: 0
 }
