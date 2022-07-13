@@ -9,6 +9,8 @@ import { OItemBackground } from "./OItemBackground";
 import { testItems } from "./OverviewScreen";
 import { SwipeTransition } from "./SwipeTransition";
 
+import flameVid from "./Media/Flame.mp4";
+
 function showAverage(
   source: Table,
   index: number,
@@ -83,7 +85,7 @@ export const OdysseyCharts: React.FC<{}> = () => {
     </Sequence>
 
     <Sequence from={280}>
-      <SwipeTransition startFrame={330}>
+      <SwipeTransition startFrame={560}>
         <SwipeTransition startFrame={280} reverse={true}>
           <SwipeTransition startFrame={210} reverse={true}>
             <SwipeTransition startFrame={140} reverse={true}>
@@ -117,10 +119,13 @@ export const OdysseyCharts: React.FC<{}> = () => {
             </OItemBackground>
           </SwipeTransition>
 
-          <AbsoluteFill style={container}>
-            <LineChart width={width} height={height} dark={true}
-              translation={true} source={test6} label="压力测试" />
-          </AbsoluteFill>
+          <>
+            <AbsoluteFill style={container}>
+              <LineChart width={width} height={height} dark={true}
+                translation={true} source={test6} label="压力测试" />
+            </AbsoluteFill>
+            <Video src={flameVid}/>
+          </>
         </SwipeTransition>
 
         <OItemBackground record={testItems[3] as TestItem}>
@@ -148,7 +153,7 @@ export const OdysseyCharts: React.FC<{}> = () => {
                 translation={true} source={test8} label="探索" />
             </AbsoluteFill>
           </Sequence>
-          <Sequence from={320} durationInFrames={70}>
+          <Sequence from={320}>
             <AbsoluteFill style={container}>
               <LineChart width={width} height={height} dark={true}
                 translation={true} source={test9} label="室内战斗" />
