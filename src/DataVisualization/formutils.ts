@@ -104,6 +104,9 @@ export function buildForm(builder: FormBuilder): Table {
 }
 
 export function max(source: Table, isGreater: (current: Cell, other: Cell) => boolean): Cell {
+  if (source.data.length === 1 && source.data[0].cols.length === 1) {
+    return source.data[0].cols[0];
+  }
   let maxData = source.data[0].cols[1];
   for (let x = 1; x < source.cols.length; x++) {
     for (let y = 1; y < source.data.length; y++) {
