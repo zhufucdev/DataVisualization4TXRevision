@@ -4,7 +4,7 @@ import { TestItem } from "../../types/test";
 import { OItem } from "./OverviewItem";
 
 export const OItemBackground: React.FC<{
-  children: ReactElement;
+  children: ReactElement[] | ReactElement;
   record: TestItem;
 }> = ({children, record}) => {
   return <>
