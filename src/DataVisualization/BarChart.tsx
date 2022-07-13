@@ -14,8 +14,12 @@ export const BarChart: React.FC<{
   translation: boolean;
   dark: boolean;
   primaryBarColor?: string;
-}> = ({width, height, source, translation, dark, primaryBarColor}) => {
-  const maxData = parseFloat(max(source, (a, b) => parseFloat(a.value) > parseFloat(b.value)).value);
+  maxData?: number;
+}> = ({width, height, source, translation, dark, primaryBarColor, maxData}) => {
+  maxData = maxData || parseFloat(max(source, (a, b) => parseFloat(a.value) > parseFloat(b.value)).value);
+  function getMaxData(): number {
+    return maxData as number;
+  }
   const frame = useCurrentFrame();
   const legendProgress = interpolate(
     frame,
@@ -94,7 +98,7 @@ export const BarChart: React.FC<{
         if (isNaN(value)) value = 0;
         return {
           backgroundImage: gradientColor(x - 1, primaryBarColor),
-          width: `${100 * value / maxData * (!isTrans ? 1 : legendProgress)}%`,
+          width: `${100 * value / getMaxData() * (!isTrans ? 1 : legendProgress)}%`,
           height: !isTrans
             ? barStroke
             : expandProgress * barStroke
@@ -102,7 +106,7 @@ export const BarChart: React.FC<{
       } else {
         return {
           backgroundImage: gradientColor(x - 1, primaryBarColor),
-          width: `${100 * parseFloat(source.data[y].cols[x].value) / maxData * sync(y)}%`,
+          width: `${100 * parseFloat(source.data[y].cols[x].value) / getMaxData() * sync(y)}%`,
           height: barStroke
         }
       }
