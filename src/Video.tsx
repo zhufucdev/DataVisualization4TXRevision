@@ -1,6 +1,8 @@
 import { Composition } from 'remotion';
 import { DataVisualization } from './DataVisualization';
 import { TDMarkCharts } from './DataVisualization/3DMarkCharts';
+import { ATTOCharts } from './DataVisualization/ATTOCharts';
+import { CinebenchCharts } from './DataVisualization/CinebenchCharts';
 import { CyberCharts } from './DataVisualization/CyberCharts';
 import { ForzaCharts } from './DataVisualization/ForzaCharts';
 import { OdysseyCharts } from './DataVisualization/OdysseyCharts';
@@ -16,7 +18,7 @@ export const RemotionVideo: React.FC = () => {
 				// npx remotion render src/index.tsx <id> out/video.mp4
 				id="Main"
 				component={DataVisualization}
-				durationInFrames={3000}
+				durationInFrames={3340}
 				fps={60}
 				width={1920}
 				height={1080}
@@ -61,6 +63,22 @@ export const RemotionVideo: React.FC = () => {
 				id="OdysseyCharts"
 				component={OdysseyCharts}
 				durationInFrames={1600}
+				fps={60}
+				width={1920}
+				height={1080}
+			/>
+			<Composition
+				id="CinebenchCharts"
+				component={CinebenchCharts}
+				durationInFrames={240}
+				fps={60}
+				width={1920}
+				height={1080}
+			/>
+			<Composition
+				id="ATTOCharts"
+				component={ATTOCharts}
+				durationInFrames={240}
 				fps={60}
 				width={1920}
 				height={1080}

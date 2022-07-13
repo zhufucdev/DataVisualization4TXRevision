@@ -7,6 +7,10 @@ import tdLogo from "./Img/3dmark-logo.png";
 import forza from "./Img/forza.jpg";
 import cyberpunk from "./Img/cyberpunk.jpg";
 import odyssey from "./Img/odyssey.jpg";
+import cbLogo from "./Img/cinebench-logo.png";
+import cbCover from "./Img/cinebench-cover.png";
+import atto from "./Img/atto-logo.png";
+
 
 export const testItems = new Array(
   {
@@ -41,11 +45,19 @@ export const testItems = new Array(
   },
   {
     title: 'Cinebench R23',
-    subtitle: 'CPU渲染测试',
-    background: '',
+    subtitle: 'CPU 三维渲染测试',
+    background: '#673AB7',
+    cover: cbCover,
+    icon: cbLogo,
+    dark: true,
+  },
+  {
+    title: 'ATTO Disk Benchmark',
+    subtitle: '磁盘读写性能测试',
+    background: '#E53935',
     cover: '',
-    icon: '',
-    dark: false,
+    icon: atto,
+    dark: true
   }
 );
 

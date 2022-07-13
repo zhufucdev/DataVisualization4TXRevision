@@ -70,6 +70,15 @@ export class ShowMaximun extends Partial {
   }
 }
 
+export class ShowTrend extends Partial {
+  override readonly name = 'show_trend';
+  override readonly label: (avg: number) => string;
+  constructor(label: (avg: number) => string, section: Section) {
+    super(label, section);
+    this.label = label;
+  }
+}
+
 export interface Section {
   column: number,
   from: number,
