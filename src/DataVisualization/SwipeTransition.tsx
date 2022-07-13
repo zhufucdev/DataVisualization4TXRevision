@@ -4,9 +4,10 @@ import { AbsoluteFill, Easing, interpolate, Sequence, useCurrentFrame, useVideoC
 const duration = 50;
 
 export const SwipeTransition: React.FC<{
-  children: [ReactElement, ReactElement],
-  startFrame: number
-}> = ({children, startFrame}) => {
+  children: [ReactElement, ReactElement];
+  startFrame: number;
+  reverse?: boolean;
+}> = ({children, startFrame, reverse}) => {
   const frame = useCurrentFrame();
   const { width } = useVideoConfig();
 
@@ -22,7 +23,7 @@ export const SwipeTransition: React.FC<{
   const translateX = interpolate(
     frame,
     [startFrame, startFrame + duration],
-    [0, -width],
+    [0, width * (reverse ? 1 : -1)],
     {
       easing: Easing.inOut(Easing.cubic),
       extrapolateLeft: 'clamp',
@@ -34,7 +35,7 @@ export const SwipeTransition: React.FC<{
     transform: `translateX(${translateX}px) scale(${scale})`
   }
   const b: React.CSSProperties = {
-    transform: `translateX(${width + translateX}px) scale(${scale})`
+    transform: `translateX(${width * (reverse ? -1 : 1) + translateX}px) scale(${scale})`
   }
 
   return <>
@@ -49,4 +50,8 @@ export const SwipeTransition: React.FC<{
     </Sequence>
   </AbsoluteFill>
   </>
+}
+
+SwipeTransition.defaultProps = {
+  reverse: false
 }
