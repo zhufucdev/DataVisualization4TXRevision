@@ -56,7 +56,7 @@ export const testItems = new Array(
     subtitle: '磁盘读写性能测试',
     background: '#E53935',
     cover: '',
-    icon: atto,
+    icon: '',
     dark: true
   }
 );
