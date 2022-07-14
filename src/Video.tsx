@@ -18,7 +18,7 @@ export const RemotionVideo: React.FC = () => {
 				// npx remotion render src/index.tsx <id> out/video.mp4
 				id="Main"
 				component={DataVisualization}
-				durationInFrames={3490}
+				durationInFrames={3520}
 				fps={60}
 				width={1920}
 				height={1080}
@@ -78,7 +78,7 @@ export const RemotionVideo: React.FC = () => {
 			<Composition
 				id="ATTOCharts"
 				component={ATTOCharts}
-				durationInFrames={240}
+				durationInFrames={300}
 				fps={60}
 				width={1920}
 				height={1080}

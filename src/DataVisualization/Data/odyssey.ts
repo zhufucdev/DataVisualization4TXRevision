@@ -674,7 +674,7 @@ const ingameBenchmarkResult = proceed(ingameBechmarkData),
 
 function powerSelect(raw: string): Table {
   const section = select(parseHML(raw), /gpu[0-9] power/gi, /gpu[0-9] usage/gi);
-  renameHeaders(section, ["独显能耗（W）", "独显利用率（%）"]);
+  renameHeaders(section, ["独显功耗（W）", "独显利用率（%）"]);
   return section;
 }
 

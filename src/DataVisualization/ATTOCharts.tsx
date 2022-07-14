@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Easing, Sequence, useVideoConfig } from "remotion";
 import { BarChart } from "./BarChart";
-import { buildForm, ShowTrend } from "./formutils";
+import { buildForm, ShowMaximun, ShowTrend } from "./formutils";
 import { LineChart, XAxisLabel } from "./LineChart";
 
 
@@ -29,21 +29,22 @@ const test1 = buildForm({
     ['64', '0.954658', '1.07']
   ]
 }),
-test2 = buildForm({
+test2 = { ...test1 },
+test3 = buildForm({
   cols: ['I/O Size', '读取（GiB/s）', '写入（GiB/s）'],
   rows: [
     ['48MiB', '5.85', '3.55'],
     ['64MiB', '5.88', '3.53']
   ]
-})
-test1.visualEffect = new ShowTrend(
-  v => `${v.toFixed(2)}GiB/s`,
-  {
-    column: 1,
-    from: test1.data.length - 2,
-    to: test1.data.length - 1
-  }
-)
+});
+const config0 = (v: number) => `${v.toFixed(2)}GiB/s`,
+  config1 = {
+  column: 1,
+  from: test1.data.length - 2,
+  to: test1.data.length - 1
+};
+test1.visualEffect = new ShowMaximun(config0, config1);
+test2.visualEffect = new ShowTrend(config0, config1);
 
 export const ATTOCharts: React.FC<{}> = () => {
   const video = useVideoConfig();
@@ -69,14 +70,22 @@ export const ATTOCharts: React.FC<{}> = () => {
       <AbsoluteFill style={container}>
         <LineChart width={width} height={height}
           translation={true} translationDuration={60}
-          easing={Easing.linear} source={test1} dark={true}
+          source={test1} dark={true}
           reference="header" label={label}/>
       </AbsoluteFill>
     </Sequence>
-    <Sequence from={150} durationInFrames={90}>
+    <Sequence from={150} durationInFrames={50}>
+      <AbsoluteFill style={container}>
+        <LineChart width={width} height={height}
+          translation={true} source={test2} dark={true}
+          easing={Easing.linear} reference="header"
+          label={label}/>
+      </AbsoluteFill>
+    </Sequence>
+    <Sequence from={200}>
       <AbsoluteFill style={container}>
         <BarChart width={width} height={height}
-          translation={false} source={test2} dark={true}/>
+          translation={false} source={test3} dark={true}/>
       </AbsoluteFill>
     </Sequence>
   </>
