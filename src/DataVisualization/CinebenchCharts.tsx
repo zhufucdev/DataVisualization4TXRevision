@@ -1,8 +1,8 @@
 import React from "react";
 import { AbsoluteFill, Sequence, useVideoConfig } from "remotion";
 import { BarChart } from "./BarChart";
-import { stressTestResult } from "./Data/cinebench";
-import { buildForm, insertRow } from "./formutils";
+import { powerResult, stressTestResult } from "./Data/cinebench";
+import { buildForm, insertRow, ShowAverage } from "./formutils";
 import { LineChart } from "./LineChart";
 
 const test1 = buildForm({
@@ -18,6 +18,24 @@ const test3 = insertRow(
   test1,
   1,
   ['天选3<p style="font-size: 30px; color: whitesmoke; margin: auto">稳定性能</p>', '17284']
+)
+const test4 = powerResult;
+test4.visualEffect = new ShowAverage(
+  v => `平均${v.toFixed(2)}W`,
+  {
+    column: 0,
+    from: 120,
+    to: test4.data.length - 1
+  }
+)
+const test5 = {...powerResult};
+test5.visualEffect = new ShowAverage(
+  v => `平均${v.toFixed(2)}℃`,
+  {
+    column: 1,
+    from: 120,
+    to: test5.data.length - 1
+  }
 )
 
 export const CinebenchCharts: React.FC<{}> = () => {
@@ -45,10 +63,28 @@ export const CinebenchCharts: React.FC<{}> = () => {
             translation={false} source={test2} />
         </AbsoluteFill>
       </Sequence>
-      <Sequence from={150}>
+      <Sequence from={150} durationInFrames={60}>
         <AbsoluteFill style={container}>
           <BarChart width={width} height={height} dark={true}
             translation={true} source={test3} primaryBarColor={color} />
+        </AbsoluteFill>
+      </Sequence>
+      <Sequence from={210} durationInFrames={90}>
+        <AbsoluteFill style={container}>
+          <LineChart width={width} height={height} dark={true}
+            translation={false} source={test4} primaryColor={color} />
+        </AbsoluteFill>
+      </Sequence>
+      <Sequence from={300} durationInFrames={50}>
+        <AbsoluteFill style={container}>
+          <LineChart width={width} height={height} dark={true}
+            translation={true} source={test4} primaryColor={color} />
+        </AbsoluteFill>
+      </Sequence>
+      <Sequence from={350}>
+        <AbsoluteFill style={container}>
+          <LineChart width={width} height={height} dark={true}
+            translation={true} source={test5} primaryColor={color} />
         </AbsoluteFill>
       </Sequence>
     </>

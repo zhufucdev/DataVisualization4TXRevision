@@ -41,12 +41,12 @@ export const DataVisualization: React.FC<{}> = () => {
           <OdysseyCharts />
         </SwipeTransition>
       </Sequence>
-      <Sequence from={2850} durationInFrames={250}>
+      <Sequence from={2850} durationInFrames={400}>
         <OItemBackground record={testItems[4] as TestItem}>
           <CinebenchCharts />
         </OItemBackground>
       </Sequence>
-      <Sequence from={3100}>
+      <Sequence from={3250}>
         <OItemBackground record={testItems[5] as TestItem}>
           <ATTOCharts />
         </OItemBackground>
